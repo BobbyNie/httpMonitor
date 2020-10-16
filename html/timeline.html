@@ -308,15 +308,18 @@ var t = new Date();
 var t_longvalue=t.getTime(); 
 
 var recursionFillData = function(i){ 
-    return fillData(t_longvalue - i*60*1000).then(function(){
+    fillData(t_longvalue - i*60*1000).then(function(){
         if(i > 0){
             recursionFillData(i-1);
         }else{ 
             myChart.setOption(option);
         } 
     }).catch(function (error) {
-        myChart.setOption(option);
-        console.log(error);
+        if(i > 0){
+            recursionFillData(i-1);
+        }else{ 
+            myChart.setOption(option);
+        }
     });;
 };
 recursionFillData(30)
