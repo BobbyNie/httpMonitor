@@ -5,20 +5,39 @@
     <title>ECharts</title>
     <!-- 引入 echarts.js -->
     <script src="echarts.js"></script>
+    <script src="axios.min.js"></script>
+    
 </head>
 <body>
     <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
-    <div id="main" style="width: 1000px;height:800px;"></div>
+    <div id="main" style="width: 1400px;height:700px;"></div>
     <script type="text/javascript">
+
+    Date.prototype.format = function (fmt) { //author: meizz
+        var o = {
+        "M+": this.getMonth() + 1, //月份
+        "d+": this.getDate(), //日
+        "h+": this.getHours(), //小时
+        "m+": this.getMinutes(), //分
+        "s+": this.getSeconds(), //秒
+        "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+        "S": this.getMilliseconds() //毫秒
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+        if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+
         // 基于准备好的dom，初始化echarts实例
         var myChart = echarts.init(document.getElementById('main'));
 
         option = {
     title: {
-        text: '监控http请求',
+        text: '监控http请求:'+(new Date()).format("yyyyMMdd"),
         subtext: '每分钟更新'
     },
-    color:['red', 'yellow','blueviolet','green'],
+   // color:['red', 'yellow','blueviolet','green'],
     tooltip: {
         trigger: 'axis',
         axisPointer: {
@@ -29,7 +48,80 @@
         }
     },
     legend: {
-        data:['113.52.112.136','113.112.52.137','202.175.20.121','202.175.20.121','113.52.112.2x']
+        data: [ 
+        {
+            name:'113.52.112.136',
+            type:'line',
+            itemStyle: {
+                normal: {
+                    color: '#ee0000',
+                    lineStyle:{
+                        width:4//设置线条粗细
+                    }
+                }
+            } 
+        },
+        {
+            name:'113.52.112.137',
+            type:'line',
+            itemStyle: {
+                normal: {
+                    color: '#ffc000',
+                    lineStyle:{
+                        width:4//设置线条粗细
+                    }
+                }
+            } 
+        },
+        {
+            name:'202.175.20.121',
+            type:'line',
+            itemStyle: {
+                normal: {
+                    color: '#5b83cb',
+                    lineStyle:{
+                        width:4//设置线条粗细
+                    }
+                }
+            }
+        },
+        {
+            name:'202.175.20.122',
+            type:'line',
+            itemStyle: {
+                normal: {
+                    color: '#70ad47',
+                    lineStyle:{
+                        width:4//设置线条粗细
+                    }
+                }
+            } 
+        },
+        {
+            name:'proxy113.52.112.2x',
+            type:'line',
+            itemStyle: {
+                normal: {
+                    color: '#535353',
+                    lineStyle:{
+                        width:4//设置线条粗细
+                    }
+                }
+            }
+        },
+        {
+            name:'other',
+            type:'line',
+            itemStyle: {
+                normal: {
+                    color: '#535000',
+                    lineStyle:{
+                        width:2//设置线条粗细
+                    }
+                }
+            } 
+        }
+    ]//['113.52.112.136' ,'113.52.112.137','202.175.20.121','202.175.20.122','proxy113.52.112.2x','other']
     },
     toolbox: {
         show: true,
@@ -53,19 +145,7 @@
 	                 return val.split(" ").join("\n");
 	            }
         	},
-            data: (function (){
-                var now = new Date();
-                var res = [];
-                var len = 10;
-                while (len--) {
-                    
-                    res.unshift(now.toLocaleDateString().replace(/^\D*/,'')+' '+now.toLocaleTimeString().replace(/^\D*/,''));
-                   // res.unshift(now.toLocaleDateString().replace(/^\D*/,'')+' '+now.getHours()+':'+now.getMinutes());
-                    //res.unshift(now.getFullYear()+'.'+ (now.getMonth() + 1)+'.'+now.getDate()+' '+now.getHours()+':'+now.getMinutes());
-                    now = new Date(now - 1*1000);
-                }
-                return res;
-            })()
+            data:[]
         }
     ],
     yAxis: [
@@ -73,22 +153,28 @@
             type: 'value',
             scale: true,
             name: '请求/分钟',
-            max: 1000,
+            max: function(){
+                var valueArr = [];
+                for(var ip in seriesDataMap){
+                    var temp = seriesDataMap[ip];
+                    valueArr.push.apply(valueArr,temp);
+                }
+                return Math.max.apply(null,valueArr)+10;
+            },
             min: 0,
             boundaryGap: [0.5, 0.5]
          }
        
     ],
-    series: [
-        
+    series: [ 
         {
             name:'113.52.112.136',
             type:'line',
             itemStyle: {
                 normal: {
-                    color: '#6cb041',
+                    color: '#ee0000',
                     lineStyle:{
-                        width:4//设置线条粗细
+                        width:4 
                     }
                 }
             },
@@ -134,7 +220,7 @@
             data:[]
         },
         {
-            name:'202.175.20.2x',
+            name:'proxy113.52.112.2x',
             type:'line',
             itemStyle: {
                 normal: {
@@ -145,34 +231,103 @@
                 }
             },
             data:[]
+        },
+        {
+            name:'other',
+            type:'line',
+            itemStyle: {
+                normal: {
+                    color: '#7e6b5a',
+                    lineStyle:{
+                        width:2//设置线条粗细
+                    }
+                }
+            },
+            data:[]
         }
     ]
 };
 
+var seriesDataMap = {};
+for(var i  = 0;i < option.series.length;i++){
+    seriesDataMap[ option.series[i].name]= option.series[i].data
+}
 
-setInterval(function (){
-    axisData = (new Date()).toLocaleDateString()+' '+(new Date()).toLocaleTimeString().replace(/^\D*/,'');
-    //axisData=(now.getFullYear()+'.'+ (now.getMonth() + 1)+'.'+now.getDate()+' '+now.getHours()+':'+now.getMinutes()).replace(/^\D*/,'');
-    //axisData=(now.toLocaleDateString().replace(/^\D*/,'')+' '+now.getHours()+':'+now.getMinutes());
+var fillData = function(t_longvalue){
+    var t = new Date();
+    t.setTime(t_longvalue);
+    axisData = []; 
+    axisData.push(t.format("hh:mm"));
     option.xAxis[0].data.push(axisData);
+
+    var lastMinJsonUrl = "../data/"+t.format("yyyyMMddhhmm")+".json";
+    return axios({
+        method: 'get',
+            url: lastMinJsonUrl,
+            responseType: 'json'
+        }).then(function (response) {
+           // response = { "14.28.186.83":2, "113.52.112.136":1, "103.143.93.14":1, "yyyyMMddhhmm":"202010161424"};
+            if(response.data != null && response.data.yyyyMMddhhmm != null){
+                var data = response.data;
+                var valueofproxy = 0;
+                var valueofother = 0;
+                for(var ip in data){
+                    if(seriesDataMap[ip] != null){
+                        seriesDataMap[ip].push(data[ip]);
+                    }else if(ip.startsWith('113.52.112.2')){
+                        valueofproxy += data[ip];
+                    }else if(ip != 'yyyyMMddhhmm'){
+                        valueofother += data[ip];
+                    }
+                }
+                seriesDataMap['proxy113.52.112.2x'].push(valueofproxy);
+                seriesDataMap['other'].push(valueofother);
+            }
+            
+
+            //response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
+            console.log(response)
+    });
+
+};
+
+var t = new Date();
+var t_longvalue=t.getTime(); 
+
+var recursionFillData = function(i){ 
+    return fillData(t_longvalue - i*60*1000).then(function(){
+        if(i > 0){
+            recursionFillData(i-1);
+        }else{ 
+            myChart.setOption(option);
+        } 
+    }).catch(function (error) {
+        myChart.setOption(option);
+        console.log(error);
+    });;
+};
+recursionFillData(30)
+
+
+setInterval(function (){ 
+    var t = new Date();   
+    fillData(t.getTime() - 60*1000).then(function(){
+        myChart.setOption(option);
+    });
+    
     if(option.xAxis[0].data.length > 30){
         option.xAxis[0].data.shift();
     }
-    
-    
-    for(var i = 0;i < 5;i++){
-        var data0 = option.series[i].data;
-        data0.push( ( i*200+Math.random() * 200 + 5).toFixed(1) - 0);
+
+    for(var i = 0;i < option.series.length;i++){
+        var data0 = option.series[i].data; 
         if(data0.length > 30){
             data0.shift();
         }
     }
-
-    myChart.setOption(option);
-}, 1*1000);
-
-        // 使用刚指定的配置项和数据显示图表。
-        myChart.setOption(option);
+ 
+}, 60*1000);
+ 
     </script>
 </body>
 </html>

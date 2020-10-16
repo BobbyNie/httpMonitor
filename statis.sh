@@ -16,6 +16,6 @@ outJsonFile=$outDir/$ymd$hm.json
 #echo $outJsonFile
 
 ihslogfile=443_ssl_access_$ymd.log
-tail -10000 $logdir/$ihslogfile | grep $hmColon |awk '{sum[$1]++}END{print "{";for(i in sum) print "\""i"\":"sum[i];print "yyyyMMddhhmm:'$ymd$hm'}"}' >$outJsonFile
+tail -10000 $logdir/$ihslogfile | grep $hmColon |awk '{sum[$1]++}END{print "{";for(i in sum) print "\""i"\":"sum[i]",";print "\"yyyyMMddhhmm\":\"'$ymd$hm'\"}"}' >$outJsonFile
  
 cat $outJsonFile
