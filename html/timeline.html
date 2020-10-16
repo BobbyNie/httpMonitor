@@ -256,10 +256,15 @@ for(var i  = 0;i < option.series.length;i++){
 var fillData = function(t_longvalue){
     var t = new Date();
     t.setTime(t_longvalue);
-    axisData = []; 
-    axisData.push(t.format("hh:mm"));
-    option.xAxis[0].data.push(axisData);
+    axisData = [];
+    var newAxis = t.format("hh:mm"); 
+    //如果这一分钟数据已经取过则不再取数据。 直接执行then方法
+    if(option.xAxis[0].data.includes(newAxis)){
+        return {then:function(f){f.apply(this,null)},
+        catch:function(f){f.apply(this,null)}};
+    }
 
+    option.xAxis[0].data.push(newAxis);
     var lastMinJsonUrl = "../data/"+t.format("yyyyMMddhhmm")+".json";
     return axios({
         method: 'get',
@@ -269,22 +274,30 @@ var fillData = function(t_longvalue){
            // response = { "14.28.186.83":2, "113.52.112.136":1, "103.143.93.14":1, "yyyyMMddhhmm":"202010161424"};
             if(response.data != null && response.data.yyyyMMddhhmm != null){
                 var data = response.data;
+                for(var series in seriesDataMap){
+                    if(data[series] != null){
+                        seriesDataMap[series].push(data[series]);
+                    }else{
+                        if(series != 'proxy113.52.112.2x' && series !='other'){
+                            seriesDataMap[series].push(0);
+                        }
+                    }
+                }
+
                 var valueofproxy = 0;
-                var valueofother = 0;
+                var valueofother = 0; 
                 for(var ip in data){
-                    if(seriesDataMap[ip] != null){
-                        seriesDataMap[ip].push(data[ip]);
-                    }else if(ip.startsWith('113.52.112.2')){
+                    if(ip.startsWith('113.52.112.2')){
                         valueofproxy += data[ip];
                     }else if(ip != 'yyyyMMddhhmm'){
                         valueofother += data[ip];
                     }
                 }
+
                 seriesDataMap['proxy113.52.112.2x'].push(valueofproxy);
                 seriesDataMap['other'].push(valueofother);
             }
             
-
             //response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
             console.log(response)
     });
@@ -311,22 +324,25 @@ recursionFillData(30)
 
 setInterval(function (){ 
     var t = new Date();   
-    fillData(t.getTime() - 60*1000).then(function(){
-        myChart.setOption(option);
-    });
-    
-    if(option.xAxis[0].data.length > 30){
-        option.xAxis[0].data.shift();
-    }
-
-    for(var i = 0;i < option.series.length;i++){
-        var data0 = option.series[i].data; 
-        if(data0.length > 30){
-            data0.shift();
+    try{ 
+        fillData(t.getTime() - 60*1000).then(function(){
+        
+        if(option.xAxis[0].data.length > 30){
+            option.xAxis[0].data.shift();
         }
+
+        for(var i = 0;i < option.series.length;i++){
+            var data0 = option.series[i].data; 
+            if(data0.length > 30){
+                data0.shift();
+            }
+        }
+        myChart.setOption(option);  
+    }); 
+    }catch(e){
+        console(e);
     }
- 
-}, 60*1000);
+}, 30*1000);
  
     </script>
 </body>
