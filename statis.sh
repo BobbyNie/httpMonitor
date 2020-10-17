@@ -10,7 +10,7 @@ fi;
 
 ymd=`date '+%Y%m%d'`;
 #取上一分钟时间。
-hmColon=`perl -MPOSIX -le 'print strftime " %H:%M:",localtime(time-(60))'`
+hmColon=`perl -MPOSIX -le 'print strftime "%H:%M:",localtime(time-(60))'`
 hm=`perl -MPOSIX -le 'print strftime "%H%M",localtime(time-(60))'`
 outJsonFile=$outDir/$ymd$hm.json
 #echo $outJsonFile

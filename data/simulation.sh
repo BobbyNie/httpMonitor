@@ -5,7 +5,7 @@ ihslogfile=443_ssl_access_$ymd.log
 
 echo >$ihslogfile;
 while(true); do
-    hmColon=`perl -MPOSIX -le 'print strftime " %H:%M:",localtime(time)'`
+    hmColon=`perl -MPOSIX -le 'print strftime "%H:%M:",localtime(time)'`
     cat simulationdata.log |grep "$hmColon" >> $ihslogfile;
     sleep 59;
 done;
