@@ -1,4 +1,4 @@
 while true;do
-    ./statis.sh /d/logs/ihs /d/data/pos/logstatis/data
+    ./statis.sh /d/gitStore/personal/httpMonitor/data /d/gitStore/personal/httpMonitor/data
     sleep 30
 done

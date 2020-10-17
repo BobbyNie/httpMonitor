@@ -291,7 +291,7 @@ var fillData = function(t_longvalue){
                 for(var ip in data){
                     if(ip.startsWith('113.52.112.2')){
                         valueofproxy += data[ip];
-                    }else if(ip != 'yyyyMMddhhmm'){
+                    }else if(ip != 'yyyyMMddhhmm' && seriesDataMap[ip] == null){
                         valueofother += data[ip];
                     }
                 }
