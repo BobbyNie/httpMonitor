@@ -255,8 +255,7 @@ for(var i  = 0;i < option.series.length;i++){
 
 var fillData = function(t_longvalue){
     var t = new Date();
-    t.setTime(t_longvalue);
-    axisData = [];
+    t.setTime(t_longvalue); 
     var newAxis = t.format("hh:mm"); 
     //如果这一分钟数据已经取过则不再取数据。 直接执行then方法
     if(option.xAxis[0].data.includes(newAxis)){
@@ -264,7 +263,6 @@ var fillData = function(t_longvalue){
         catch:function(f){f.apply(this,null)}};
     }
 
-    option.xAxis[0].data.push(newAxis);
     var lastMinJsonUrl = "../data/"+t.format("yyyyMMddhhmm")+".json";
     return axios({
         method: 'get',
@@ -273,6 +271,10 @@ var fillData = function(t_longvalue){
         }).then(function (response) {
            // response = { "14.28.186.83":2, "113.52.112.136":1, "103.143.93.14":1, "yyyyMMddhhmm":"202010161424"};
             if(response.data != null && response.data.yyyyMMddhhmm != null){
+                //add  xaxis
+                option.xAxis[0].data.push(newAxis);
+                
+                //add values
                 var data = response.data;
                 for(var series in seriesDataMap){
                     if(data[series] != null){
@@ -308,19 +310,14 @@ var t = new Date();
 var t_longvalue=t.getTime(); 
 
 var recursionFillData = function(i){ 
-    fillData(t_longvalue - i*60*1000).then(function(){
+    var after = function(){
         if(i > 0){
             recursionFillData(i-1);
         }else{ 
             myChart.setOption(option);
         } 
-    }).catch(function (error) {
-        if(i > 0){
-            recursionFillData(i-1);
-        }else{ 
-            myChart.setOption(option);
-        }
-    });;
+    };
+    fillData(t_longvalue - i*60*1000).then(after).catch(after);
 };
 recursionFillData(30)
 
