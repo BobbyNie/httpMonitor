@@ -20,6 +20,19 @@
     <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
     <div id="main" style="width: 100%;height:100%;"></div>
     <script type="text/javascript">
+    function getQueryString(name) {
+        let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        let r = window.location.search.substr(1).match(reg);
+        if (r != null) {
+            return decodeURIComponent(r[2]);
+        };
+        return null;
+    }
+
+    var max_times = parseInt( getQueryString("times"),10);
+    if(max_times == null ||  isNaN(max_times) ){
+        max_times = 30;
+    }
 
     Date.prototype.format = function (fmt) { //author: meizz
         var o = {
@@ -327,7 +340,7 @@ var recursionFillData = function(i){
     };
     fillData(t_longvalue - i*60*1000).then(after).catch(after);
 };
-recursionFillData(30)
+recursionFillData(max_times)
 
 
 setInterval(function (){ 
@@ -335,13 +348,13 @@ setInterval(function (){
     try{ 
         fillData(t.getTime() - 60*1000).then(function(){
         
-        if(option.xAxis[0].data.length > 30){
+        if(option.xAxis[0].data.length > max_times){
             option.xAxis[0].data.shift();
         }
 
         for(var i = 0;i < option.series.length;i++){
             var data0 = option.series[i].data; 
-            if(data0.length > 30){
+            if(data0.length > max_times){
                 data0.shift();
             }
         }
