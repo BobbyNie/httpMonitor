@@ -336,36 +336,41 @@ var recursionFillData = function(i){
     var after = function(){
         if(i > 0){
             recursionFillData(i-1);
-        }else{ 
+        }else{
+            setAutoUpdate();//最后一次调用之后启动固定刷新。
+        }
+        if(i %30 == 0 || i <=0){
             myChart.setOption(option);
-        } 
+        }
+         
     };
     fillData(t_longvalue - i*60*1000).then(after).catch(after);
 };
 recursionFillData(max_times)
 
-
-setInterval(function (){ 
+var setAutoUpdate = function(){ 
+    setInterval(function (){ 
     var t = new Date();   
-    try{ 
-        fillData(t.getTime() - 60*1000).then(function(){
-        
-        if(option.xAxis[0].data.length > max_times){
-            option.xAxis[0].data.shift();
-        }
-
-        for(var i = 0;i < option.series.length;i++){
-            var data0 = option.series[i].data; 
-            if(data0.length > max_times){
-                data0.shift();
+        try{ 
+            fillData(t.getTime() - 60*1000).then(function(){
+            
+            if(option.xAxis[0].data.length > max_times){
+                option.xAxis[0].data.shift();
             }
+
+            for(var i = 0;i < option.series.length;i++){
+                var data0 = option.series[i].data; 
+                if(data0.length > max_times){
+                    data0.shift();
+                }
+            }
+            myChart.setOption(option);  
+        }); 
+        }catch(e){
+            console(e);
         }
-        myChart.setOption(option);  
-    }); 
-    }catch(e){
-        console(e);
-    }
-}, 30*1000);
+    }, 30*1000);
+};
  
     </script>
 </body>
