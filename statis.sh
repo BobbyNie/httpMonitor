@@ -1,4 +1,4 @@
-
+#!/usr/bin/bash
 logdir=$1
 outDir=$2
 if [ "$logdir" = "" ];
@@ -15,8 +15,12 @@ hmColon=`perl -MPOSIX -le 'print strftime "%H:%M:",localtime(time-(60))'`
 hm=`perl -MPOSIX -le 'print strftime "%H%M",localtime(time-(60))'`
 outJsonFile=$outDir/$ymd$hm.json
 
+filesize=`ls -l $outJsonFile 2>/dev/null | awk '{ print $5 }'`
+#echo $filesize
+
+minsize=$((40))
 #echo $outJsonFile
-if [ ! -f "$outJsonFile" ]; then
+if [ ! -f "$outJsonFile" ] || [ $minsize -gt $filesize ]; then
     ihslogfile=443_ssl_access_$ymd.log
     tail -10000 $logdir/$ihslogfile | grep "$hmColon" |awk '{sum[$1]++}END{print "{";for(i in sum) print "\""i"\":"sum[i]",";print "\"yyyyMMddhhmm\":\"'$ymd$hm'\"}"}' >$outJsonFile.tmp
     mv $outJsonFile.tmp $outJsonFile
